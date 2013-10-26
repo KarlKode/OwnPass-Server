@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import random
 from flask.ext.restful import fields
 from db import db
 
@@ -60,11 +61,13 @@ class Device(db.Model):
     user = db.relationship('User', backref=db.backref('devices', lazy='dynamic'))
     device = db.Column(db.String(64))
     active = db.Column(db.Boolean)
+    code = db.Column(db.Integer)
 
     def __init__(self, user_id, device):
         self.user_id = user_id
         self.device = device
         self.active = False
+        self.code = random.randint(0, 1000000)
 
 
 class Login(db.Model):

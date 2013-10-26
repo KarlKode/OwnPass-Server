@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import urllib2
-from flask import request, abort, g, json
+from flask import request, abort, g, json, Response
 from functools import wraps
 from hashlib import sha256
 from flask.ext.mail import Message
 import urllib
 import pygeoip
+from twilio.rest import TwilioRestClient
 from werkzeug.exceptions import Unauthorized
 from db import db
 from mail import mail
@@ -14,10 +15,19 @@ from models import User, Device, Login
 
 
 def send_device_authentication(device):
+    # Send email
     message = Message("OwnPass - New device", recipients=[g.user.email])
     message.html = '''<h1>OwnPass - New device</h1>
-<p>A new device with the id %d has tried to log in to your ownpass account.</p>''' % device.id
+<p>A new device with the id %s has tried to log in to your ownpass account.</p>''' % device.code
     print mail.send(message)
+
+    # Send SMS
+    account = 'AC70f8a27e5fa47b2e64027c72bf319465'
+    token = '5b46fb421f558606e51220d5190e155b'
+    client = TwilioRestClient(account, token)
+
+    message = client.messages.create(to=g.user.phone, from_='+18573133734',
+                                     body='OwnPass: New device\nID: %s' % device.code)
 
 
 def auth_required(f):
@@ -39,12 +49,12 @@ def auth_required(f):
             db.session.add(device)
             db.session.commit()
             send_device_authentication(device)
-            return json.dumps({"id": device.id}), 401
+            return Response(json.dumps({"device": device.device, "id": device.id}), 401)
         # Log ip
         ip = get_ip()
         if not Login.query.filter(Login.user_id == user.id, Login.ip == ip).first():
             login = Login(user.id, ip)
-            gi = pygeoip.GeoIP('GeoLiteCity.dat').record_by_addr('178.197.231.219')
+            gi = pygeoip.GeoIP('GeoLiteCity.dat').record_by_addr(ip)
             if gi:
                 login.latitude = gi.get('latitude', 0)
                 login.longitude = gi.get('longitude', 0)
@@ -55,7 +65,7 @@ def auth_required(f):
 
 
 def get_device():
-    return sha256(str(request.user_agent)).hexdigest()
+    return sha256(str(request.user_agent) + 'a').hexdigest()
 
 
 def get_ip():

@@ -10,6 +10,7 @@ from utils import auth_required, get_device
 user_parser = reqparse.RequestParser()
 user_parser.add_argument('email', type=str, location=('json',))
 user_parser.add_argument('password', type=str, location=('json',))
+user_parser.add_argument('phone', type=str, location=('json',))
 
 
 class UserListResource(Resource):
@@ -29,6 +30,8 @@ class UserListResource(Resource):
             abort(409)
         # Add user
         user = User(args['email'], args['password'])
+        if args['phone']:
+            user.phone = args['phone']
         db.session.add(user)
         db.session.commit()
         # Add current device for the user
