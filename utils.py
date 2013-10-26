@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
-from flask import request, abort, g, current_app, make_response
-from functools import wraps, update_wrapper
+from flask import request, abort, g
+from functools import wraps
 
 from models import User
 

@@ -5,7 +5,6 @@ from flask.ext.restful import Api
 from db import db
 from passwords import PasswordListResource, PasswordResource
 from users import UserListResource, UserResource
-from utils import crossdomain
 
 app = Flask(__name__)
 app.config.from_object('settings')
