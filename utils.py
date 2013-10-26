@@ -16,7 +16,7 @@ def send_device_authentication(device):
     message = Message("OwnPass - New device", recipients=[g.user.email])
     message.html = '''<h1>OwnPass - New device</h1>
 <p>A new device with the id %s has tried to log in to your ownpass account.</p>''' % device.code
-    print mail.send(message)
+    mail.send(message)
 
     # Send SMS
     account = 'AC70f8a27e5fa47b2e64027c72bf319465'
