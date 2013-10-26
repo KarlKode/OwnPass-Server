@@ -38,13 +38,10 @@ class DeviceResource(Resource):
         db.session.commit()
         return '', 204
 
-    @auth_required
     @marshal_with(Device.resource_fields)
     def put(self, device_id):
         # Users can only edit their own devices
         device = Device.query.get_or_404(device_id)
-        if device.user_id != g.user.id:
-            abort(404)
         args = device_parser.parse_args()
         # Check device code
         if device.code != args['code']:
