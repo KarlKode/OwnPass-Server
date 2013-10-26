@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import g
+from flask import g, Response, json
 from flask.ext.restful import Resource, marshal_with, abort, reqparse
 from db import db
 from models import Device
@@ -45,7 +45,7 @@ class DeviceResource(Resource):
         args = device_parser.parse_args()
         # Check device code
         if device.code != args['code']:
-            abort(404)
+            return Response(json.dumps({"message": "Access denied."}), 403, content_type='application/json')
         # Check arguments
         if not args['device'] or not args['active']:
             abort(406)
