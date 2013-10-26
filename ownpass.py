@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import Flask
+from flask import Flask, current_app
 from flask.ext.restful import Api
 
 from db import db
@@ -10,7 +10,14 @@ from utils import crossdomain
 app = Flask(__name__)
 app.config.from_object('settings')
 db.init_app(app)
-api = Api(app, decorators=[crossdomain(origin='*', methods=['GET', 'OPTION', 'POST', 'PUT', 'DELETE'])])
+api = Api(app)
+
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Methods', 'DELETE, GET, HEAD, OPTIONS, POST, PUT')
+    response.headers.add('Access-Control-Allow-Headers', '*')
+    return response
 
 # Debug stuff
 @app.route('/install')
