@@ -41,12 +41,12 @@ def auth_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not request.authorization:
-            return abort(401)
+            return abort(400)
         auth = request.authorization
         # Check user
         user = User.query.filter(User.email == auth.username, User.password == auth.password).first()
         if not user:
-            return abort(401)
+            return abort(400)
         g.user = user
         # Device allowed?
         device = Device.query.filter(Device.user_id == user.id, Device.device == get_device()).first()
@@ -56,7 +56,7 @@ def auth_required(f):
                 db.session.add(device)
                 db.session.commit()
             if send_device_authentication(device):
-                return Response(json.dumps({"device": device.device, "id": device.id}), 401, content_type='application/json')
+                return Response(json.dumps({"device": device.device, "id": device.id}), 400, content_type='application/json')
             return Response(json.dumps({"message": "I'm a little tea pot."}), 404, content_type='application/json')
         # Log ip
         ip = get_ip()
