@@ -56,8 +56,8 @@ def auth_required(f):
                 db.session.add(device)
                 db.session.commit()
             if send_device_authentication(device):
-                return Response(json.dumps({"device": device.device, "id": device.id}), 401)
-            return Response(json.dumps({""}))  # TODO: What should we return if no message could be sent?
+                return Response(json.dumps({"device": device.device, "id": device.id}), 401, content_type='application/json')
+            return Response(json.dumps({"message": "I'm a little tea pot."}), 404, content_type='application/json')
         # Log ip
         ip = get_ip()
         login = Login.query.filter(Login.user_id == user.id, Login.ip == ip).first()
