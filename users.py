@@ -8,9 +8,14 @@ from utils import check_auth
 
 
 class UserHandler(object):
+    def check_user_json(self):
+        if not request.json or not request.json.has_key('email') or not request.json.has_key('password'):
+            return False
+        return True
+
     def add(self):
         # Validate request
-        if not (request.json and request.json.has_key('email') and request.json.has_key('password')):
+        if not self.check_user_json():
             return 400, 'Invalid request'
         # Get JSON request data
         email = request.json.get('email')
@@ -24,11 +29,20 @@ class UserHandler(object):
         db.session.commit()
         return 200, user
 
-    def update(self):
-        pass
+    @need_auth(check_auth, 'user')
+    def update(self, user):
+        if not self.check_user_json():
+            return 400, 'Invalid request'
+        user.email = request.json['email']
+        user.password = request.json['password']
+        db.session.commit()
+        return 200, user
 
-    def delete(self):
-        pass
+    @need_auth(check_auth, 'user')
+    def delete(self, user):
+        db.session.delete(user)
+        db.session.commit()
+        return 200, 'OK'
 
     @need_auth(check_auth, remove_attr=False)
     def list(self):
