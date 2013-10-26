@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import abort, g
+from flask import abort, g, request
 from flask.ext.restful import Resource, reqparse, marshal_with
 from db import db
 from models import Password
@@ -7,6 +7,7 @@ from utils import auth_required
 
 
 password_parser = reqparse.RequestParser()
+password_parser.add_argument('passwords', type=list, location=('json',))
 password_parser.add_argument('site', type=str, location=('json',))
 password_parser.add_argument('username', type=str, location=('json',))
 password_parser.add_argument('password', type=str, location=('json',))
@@ -31,6 +32,26 @@ class PasswordListResource(Resource):
         db.session.commit()
         print password.site
         return password, 201
+
+    @auth_required
+    @marshal_with(Password.resource_fields)
+    def put(self):
+        # Delete all passwords the user has
+        for password in Password.query.filter(Password.user_id == g.user.id).all():
+            db.session.delete(password)
+        # Add new passwords
+        passwords = []
+        for args in request.json:
+            # Check arguments
+            if not args['site'] or not args['username'] or not args['password']:
+                abort(406)
+            # Add password
+            password = Password(g.user.id, args['site'], args['username'], args['password'])
+            db.session.add(password)
+            passwords.append(password)
+        db.session.commit()
+        return passwords, 201
+
 
 class PasswordResource(Resource):
     @auth_required
