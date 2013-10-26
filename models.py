@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 from flask.ext.restful import fields
 from db import db
 
@@ -71,6 +72,7 @@ class Login(db.Model):
         'id': fields.Integer,
         'user_id': fields.Integer,
         'ip': fields.String,
+        'time': fields.DateTime,
         'latitude': fields.String,
         'longitude': fields.String
     }
@@ -79,6 +81,7 @@ class Login(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = db.relationship('User', backref=db.backref('logins', lazy='dynamic'))
     ip = db.Column(db.String(15))
+    time = db.Column(db.DateTime, default=datetime.datetime.now)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
 
