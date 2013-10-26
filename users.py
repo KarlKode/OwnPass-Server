@@ -3,8 +3,8 @@ from flask import abort, g
 from flask.ext.restful import Resource, reqparse, marshal_with
 
 from db import db
-from models import User
-from utils import auth_required
+from models import User, Device
+from utils import auth_required, get_device
 
 
 user_parser = reqparse.RequestParser()
@@ -30,6 +30,11 @@ class UserListResource(Resource):
         # Add user
         user = User(args['email'], args['password'])
         db.session.add(user)
+        db.session.commit()
+        # Add current device for the user
+        device = Device(user.id, get_device())
+        device.active = True
+        db.session.add(device)
         db.session.commit()
         return user, 201
 

@@ -6,12 +6,14 @@ from db import db
 class User(db.Model):
     resource_fields = {
         'id': fields.Integer,
-        'email': fields.String
+        'email': fields.String,
+        'phone': fields.String
     }
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
+    phone = db.Column(db.String(20))
 
     def __init__(self, email, password):
         self.email = email
@@ -42,3 +44,22 @@ class Password(db.Model):
         self.site = site
         self.username = username
         self.password = password
+
+class Device(db.Model):
+    resource_fields = {
+        'id': fields.Integer,
+        'user_id': fields.Integer,
+        'device': fields.String,
+        'active': fields.Boolean
+    }
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship('User', backref=db.backref('devices', lazy='dynamic'))
+    device = db.Column(db.String(50))
+    active = db.Column(db.Boolean)
+
+    def __init__(self, user_id, device):
+        self.user_id = user_id
+        self.device = device
+        self.active = False
