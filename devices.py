@@ -9,7 +9,7 @@ from utils import auth_required
 device_parser = reqparse.RequestParser()
 device_parser.add_argument('device', type=str, location=('json',))
 device_parser.add_argument('active', type=bool, location=('json',))
-device_parser.add_argument('code', type=Integer, location=('json',))
+device_parser.add_argument('code', type=int, location=('json',))
 
 
 class DeviceListResource(Resource):
