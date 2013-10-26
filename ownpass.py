@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from flask import Flask
-from flask.ext.rest import RESTResource
+from flask.ext.restful import Api
 
 from db import db
-from passwords import PasswordHandler
-from users import UserHandler
+from users import UserListResource, UserResource
 
 app = Flask(__name__)
 app.config.from_object('settings')
 db.init_app(app)
+api = Api(app)
 
 # Debug stuff
 @app.route('/install')
@@ -29,21 +29,8 @@ def install():
     return 'INSTALLED'
 
 
-user_resource = RESTResource(
-    name='user',
-    route='/users',
-    app=app,
-    actions=['add', 'update', 'delete', 'list'],
-    handler=UserHandler()
-)
-
-password_resource = RESTResource(
-    name='password',
-    route='/passwords',
-    app=app,
-    actions=['add', 'update', 'delete', 'list'],
-    handler=PasswordHandler()
-)
+api.add_resource(UserListResource, '/users')
+api.add_resource(UserResource, '/users/<int:user_id>')
 
 
 if __name__ == '__main__':

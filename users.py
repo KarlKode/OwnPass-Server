@@ -1,50 +1,66 @@
 # -*- coding: utf-8 -*-
-from flask import request
-from flask.ext.rest import need_auth
+from flask import request, abort, g
+from flask.ext.restful import Resource, reqparse, marshal_with
 
 from db import db
 from models import User
-from utils import check_auth
+from utils import auth_required
 
 
-class UserHandler(object):
-    def check_user_json(self):
-        if not request.json or not request.json.has_key('email') or not request.json.has_key('password'):
-            return False
-        return True
+user_parser = reqparse.RequestParser()
+user_parser.add_argument('email', type=str, location=('json',))
+user_parser.add_argument('password', type=str, location=('json',))
 
-    def add(self):
-        # Validate request
-        if not self.check_user_json():
-            return 400, 'Invalid request'
-        # Get JSON request data
-        email = request.json.get('email')
-        password = request.json.get('password')
+
+class UserListResource(Resource):
+    @auth_required
+    @marshal_with(User.resource_fields)
+    def get(self):
+        return User.query.all()
+
+    @marshal_with(User.resource_fields)
+    def post(self):
+        # Check arguments
+        args = user_parser.parse_args()
+        if not args['email'] or not args['password']:
+            abort(406)
         # Check for duplicate emails
-        if User.query.filter(User.email == email).first() is not None:
-            return 400, 'Invalid request'
+        if User.query.filter(User.email == args['email']).first() is not None:
+            abort(409)
         # Add user
-        user = User(email, password)
+        user = User(args['email'], args['password'])
         db.session.add(user)
         db.session.commit()
-        return 200, user
+        return user, 201
 
-    @need_auth(check_auth, 'user')
-    def update(self, user):
-        if not self.check_user_json():
-            return 400, 'Invalid request'
-        user.email = request.json['email']
-        user.password = request.json['password']
+
+class UserResource(Resource):
+    @auth_required
+    @marshal_with(User.resource_fields)
+    def get(self, user_id):
+        return User.query.get_or_404(user_id)
+
+    @auth_required
+    def delete(self, user_id):
+        # Users can only delete their own account
+        if g.user.id != user_id:
+            abort(403)
+        # Delete user from the database
+        db.session.delete(g.user)
         db.session.commit()
-        return 200, user
+        return '', 204
 
-    @need_auth(check_auth, 'user')
-    def delete(self, user):
-        db.session.delete(user)
+    @auth_required
+    @marshal_with(User.resource_fields)
+    def put(self, user_id):
+        # Users can only edit their own account
+        if g.user.id != user_id:
+            abort(403)
+        # Check arguments
+        args = user_parser.parse_args()
+        if not args['email'] or not args['password']:
+            abort(406)
+        g.user.email = args['email']
+        g.user.password = args['password']
         db.session.commit()
-        return 200, 'OK'
-
-    @need_auth(check_auth, remove_attr=False)
-    def list(self):
-        users = User.query.all()
-        return 200, users
+        return g.user, 201
