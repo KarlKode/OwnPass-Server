@@ -9,6 +9,7 @@ from utils import auth_required
 device_parser = reqparse.RequestParser()
 device_parser.add_argument('device', type=str, location=('json',))
 device_parser.add_argument('active', type=bool, location=('json',))
+device_parser.add_argument('code', type=str, location=('json',))
 
 
 class DeviceListResource(Resource):
@@ -44,8 +45,11 @@ class DeviceResource(Resource):
         device = Device.query.get_or_404(device_id)
         if device.user_id != g.user.id:
             abort(404)
-        # Check arguments
         args = device_parser.parse_args()
+        # Check device code
+        if device.code != args['code']:
+            abort(404)
+        # Check arguments
         if not args['device'] or not args['active']:
             abort(406)
         device.device = args['device']
