@@ -67,7 +67,7 @@ class Device(db.Model):
         self.user_id = user_id
         self.device = device
         self.active = False
-        self.code = random.randint(0, 1000000)
+        self.code = random.randint(100000, 999999)
 
 
 class Login(db.Model):
