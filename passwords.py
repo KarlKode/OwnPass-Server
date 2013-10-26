@@ -44,7 +44,7 @@ class PasswordResource(Resource):
     @auth_required
     def delete(self, password_id):
         # Users can only delete their own passwords
-        password = Password.get_or_404(password_id)
+        password = Password.query.get_or_404(password_id)
         if password.user_id != g.user.id:
             abort(404)
         # Delete password from the database
@@ -56,7 +56,7 @@ class PasswordResource(Resource):
     @marshal_with(Password.resource_fields)
     def put(self, password_id):
         # Users can only edit their own passwords
-        password = Password.get_or_404(password_id)
+        password = Password.query.get_or_404(password_id)
         if password.user_id != g.user.id:
             abort(404)
         # Check arguments
