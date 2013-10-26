@@ -45,6 +45,7 @@ class Password(db.Model):
         self.username = username
         self.password = password
 
+
 class Device(db.Model):
     resource_fields = {
         'id': fields.Integer,
@@ -56,10 +57,31 @@ class Device(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = db.relationship('User', backref=db.backref('devices', lazy='dynamic'))
-    device = db.Column(db.String(50))
+    device = db.Column(db.String(64))
     active = db.Column(db.Boolean)
 
     def __init__(self, user_id, device):
         self.user_id = user_id
         self.device = device
         self.active = False
+
+
+class Login(db.Model):
+    resource_fields = {
+        'id': fields.Integer,
+        'user_id': fields.Integer,
+        'ip': fields.String,
+        'latitude': fields.String,
+        'longitude': fields.String
+    }
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship('User', backref=db.backref('logins', lazy='dynamic'))
+    ip = db.Column(db.String(15))
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+
+    def __init__(self, user_id, ip):
+        self.user_id = user_id
+        self.ip = ip

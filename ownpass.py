@@ -4,6 +4,7 @@ from flask.ext.restful import Api
 
 from db import db
 from devices import DeviceListResource, DeviceResource
+from logins import LoginListResource
 from mail import mail
 from passwords import PasswordListResource, PasswordResource
 from users import UserListResource, UserResource
@@ -35,6 +36,7 @@ api.add_resource(PasswordListResource, '/passwords')
 api.add_resource(PasswordResource, '/passwords/<int:password_id>')
 api.add_resource(DeviceListResource, '/devices')
 api.add_resource(DeviceResource, '/devices/<int:device_id>')
+api.add_resource(LoginListResource, '/logins')
 
 
 if __name__ == '__main__':

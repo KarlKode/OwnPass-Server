@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
-from datetime import timedelta
-from flask import request, abort, g
+import urllib2
+from flask import request, abort, g, json
 from functools import wraps
 from hashlib import sha256
 from flask.ext.mail import Message
+import urllib
+import pygeoip
+from werkzeug.exceptions import Unauthorized
 from db import db
 from mail import mail
 
-from models import User, Device
+from models import User, Device, Login
 
 
 def send_device_authentication(device):
@@ -30,16 +33,32 @@ def auth_required(f):
         g.user = user
         # Device allowed?
         device = Device.query.filter(
-            Device.active == True, Device.user_id == user.id, Device.device == get_device()).first()
+            Device.active, Device.user_id == user.id, Device.device == get_device()).first()
         if not device:
             device = Device(user.id, get_device())
             db.session.add(device)
             db.session.commit()
             send_device_authentication(device)
-            return abort(401)
+            return json.dumps({"id": device.id}), 401
+        # Log ip
+        ip = get_ip()
+        if not Login.query.filter(Login.user_id == user.id, Login.ip == ip).first():
+            login = Login(user.id, ip)
+            gi = pygeoip.GeoIP('GeoLiteCity.dat').record_by_addr('178.197.231.219')
+            if gi:
+                login.latitude = gi.get('latitude', 0)
+                login.longitude = gi.get('longitude', 0)
+            db.session.add(login)
+            db.session.commit()
         return f(*args, **kwargs)
     return decorated_function
 
 
 def get_device():
     return sha256(str(request.user_agent)).hexdigest()
+
+
+def get_ip():
+    if request.headers.has_key('X-Real-IP'):
+        return request.headers.get('X-Real-IP')
+    return request.remote_addr
