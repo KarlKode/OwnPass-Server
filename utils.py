@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
-import urllib2
 from flask import request, abort, g, json, Response
 from functools import wraps
 from hashlib import sha256
 from flask.ext.mail import Message
-import urllib
 import pygeoip
 from twilio.rest import TwilioRestClient
-from werkzeug.exceptions import Unauthorized
 from db import db
 from mail import mail
 
@@ -65,7 +62,7 @@ def auth_required(f):
 
 
 def get_device():
-    return sha256(str(request.user_agent) + 'a').hexdigest()
+    return sha256(str(request.user_agent)).hexdigest()
 
 
 def get_ip():
