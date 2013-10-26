@@ -21,10 +21,13 @@ def send_device_authentication(device):
     # Send SMS
     account = 'AC70f8a27e5fa47b2e64027c72bf319465'
     token = '5b46fb421f558606e51220d5190e155b'
-    client = TwilioRestClient(account, token)
+    try:
+        client = TwilioRestClient(account, token)
 
-    message = client.messages.create(to=g.user.phone, from_='+18573133734',
-                                     body='OwnPass: New device\nID: %s' % device.code)
+        message = client.messages.create(to=g.user.phone, from_='+18573133734',
+                                         body='OwnPass: New device\nID: %s' % device.code)
+    except:
+        pass
 
 
 def auth_required(f):
