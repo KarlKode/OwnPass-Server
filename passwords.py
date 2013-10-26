@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import request, abort, g
+from flask import abort, g
 from flask.ext.restful import Resource, reqparse, marshal_with
 from db import db
 from models import Password
