@@ -36,7 +36,7 @@ class PasswordResource(Resource):
     @auth_required
     @marshal_with(Password.resource_fields)
     def get(self, password_id):
-        password = Password.get_or_404(password_id)
+        password = Password.query.get_or_404(password_id)
         if password.user_id != g.user.id:
             abort(404)
         return password
