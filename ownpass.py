@@ -15,7 +15,7 @@ api = Api(app)
 def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', '*')
     response.headers.add('Access-Control-Allow-Methods', 'DELETE, GET, HEAD, OPTIONS, POST, PUT')
-    response.headers.add('Access-Control-Allow-Headers', 'Authorize, Content-Type')
+    response.headers.add('Access-Control-Allow-Headers', 'Authorization, Content-Type')
     return response
 
 # Debug stuff
